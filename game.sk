@@ -15,6 +15,8 @@ command /setstartphase1:
             execute console command "/rg flag neutral_zone -w world pvp deny"
             set {team.bed_status.red} to true
             set {team.bed_status.blue} to true
+            loop all players:
+                set {respawns.%loop-player%} to 3
 
         else:
             send "&cDu hast KEINE Menschenrechte!" to player
