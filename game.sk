@@ -82,7 +82,13 @@ command /startphase3:
                         send "&9Du wurdest in den Spawn deines Teams teleportiert!" to loop-player
                     else:
                         send "&eDu bist in keinem Team und wurdest nicht teleportiert." to loop-player
-                    
+                
+                loop all players:
+                    if loop-player has permission "group.team-rot":
+                      #  set respawn location to location(-178.5, -40, -70.5, world "world")
+                    else if loop-player has permission "group.team-blau":
+                      #  set respawn location to location(-178.5, -40, 13.5, world "world")
+                
                 execute console command "/rg flag neutral_zone -w world pvp allow"
 
             else:
@@ -101,26 +107,20 @@ command /endgame:
             send "&cDu hast KEINE Menschenrechte!" to player
 
 
-on block break:
-    # Prüfen, ob der Block ein Bett ist
-    if event-block is black_bed:
-        send "&cDu hast KEINE Menschenrechte!" to player
-        # Überprüfen, ob das Zerstören des Bettes an einer bestimmten Position stattfindet
-#       if event-block's location is location(-116, -60, 3, world "world"):  # Position des roten Bettes
-#           # Aktion, wenn das rote Bett zerstört wurde
-#           send "&cDas rote Team hat sein Bett verloren!" to all players
-#           execute console command "/endgame"  # Spiel beenden, wenn das rote Bett zerstört wurde
-#           set {phase.active} to "GAME_END"  # Spielstatus auf GAME_END setzen
-#           stop
-#      else if event-block's location is location(-50.5, -60, -43.5, world "world"):  # Position des blauen Bettes
-            # Aktion, wenn das blaue Bett zerstört wurde
-#            send "&9Das blaue Team hat sein Bett verloren!" to all players
-#            execute console command "/endgame"  # Spiel beenden, wenn das blaue Bett zerstört wurde
-#            set {phase.active} to "GAME_END"  # Spielstatus auf GAME_END setzen
-#            stop
-    if event-block is blue_bed:
-        send "&1blaues bed" to player
-        set {team.bed_status.blue} to false
+on respawn: #legt den respawn während den restlichen phasen fest
+    if {phase.active} is 2 or 3:
+        if player has permission "group.team-rot":
+            set respawn location to location(-178.5, -40, -94.5, world "world")
+        else if player has permission "group.team-blau":
+            set respawn location to location(-178.5, -40, 37.5, world "world")
+
+
+on respawn: # legt den respawn während der kampf phase fest
+    if {phase.active} is 4:
+        if player has permission "group.team-rot":
+            set respawn location to location(-178.5, -40, -70.5, world "world")
+        else if player has permission "group.team-blau":
+            set respawn location to location(-178.5, -40, 13.5, world "world")
 
 command /bett-blau:
     trigger:
@@ -163,7 +163,7 @@ on death:
                     subtract 1 from {respawns.%victim%}
                     send "&cDu bist gestorben! Respawns übrig: %{respawns.%victim%}%" to victim
                     wait 3 seconds  # Zeit bis zum Respawn
-                    teleport victim to location(-178.5, -40, -70.5, world "world")  # Zurück zum Spawn des roten Teams
+                    #teleport victim to location(-178.5, -40, -70.5, world "world")  # Zurück zum Spawn des roten Teams
                     stop
                 else:
                     send "&cKeine Respawns mehr! Du bist aus dem Spiel ausgeschieden." to victim
@@ -179,7 +179,7 @@ on death:
                     subtract 1 from {respawns.%victim%}
                     send "&9Du bist gestorben! Respawns übrig: %{respawns.%victim%}%" to victim
                     wait 3 seconds  # Zeit bis zum Respawn
-                    teleport victim to location(-178.5, -40, 13.5, world "world")  # Zurück zum Spawn des blauen Teams
+                    #teleport victim to location(-178.5, -40, 13.5, world "world")  # Zurück zum Spawn des blauen Teams
                     stop
                 else:
                     send "&9Keine Respawns mehr! Du bist aus dem Spiel ausgeschieden." to victim
