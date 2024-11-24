@@ -1,24 +1,30 @@
 on right click with honeycomb:
     if {phase.active} is 1:
-        spawn iron golem at player's location
-        set {_golem} to last spawned entity
-        set {temporary_golem.%player%.%uuid of {_golem}%} to {_golem} # Speichere den Golem für diesen Spieler
-        send "&7Ein Eisengolem wurde für dich gespawnt und greift Feinde an!" to player
+        # Spawn a Citizens 2 Iron Golem NPC
+        execute console command "npc create Aggressive_Golem --type IRON_GOLEM"
+        set {_golem} to last spawned npc
+        set {_npcid} to id of {_golem}
+
+        # Save NPC data for future removal
+        set {temporary_golem.%player%.%{_npcid}%} to {_npcid}
+        send "&7Ein aggressiver Eisengolem wurde gespawnt, der Feinde angreift!" to player
         remove 1 of honeycomb from player's inventory
 
-        # Eisengolem angreifen lassen
+        # Configure NPC to target the nearest enemy team player
+        execute console command "npc select %{_npcid}%"  # Select this NPC
+        execute console command "npc path"  # Enable pathing for the NPC
+        execute console command "npc lookclose true"  # Make NPC look at nearby players
+        execute console command "npc attack true"  # Enable aggression
+
+        # Set targeting to opposite team
         loop all players:
-            if {team.%loop-player%} is not {team.%player%}:  # Wenn Spieler im anderen Team
-                set {_target} to loop-player
-                execute console command "data merge entity %uuid of {_golem}% {AngryAt:[{_target}]}"
+            if {team.%loop-player%} is not {team.%player%}:  # Opposite team
+                execute console command "npc target add entity %loop-player%"
 
-        # Timer, um den Golem nach 60 Sekunden zu entfernen
+        # Remove Golem after 60 seconds
         wait 60 seconds
-        if {_golem} is alive:
-            kill {_golem}
-            delete {temporary_golem.%player%.%uuid of {_golem}%}
-            send "&7Dein Eisengolem ist verschwunden!" to player
-
+        execute console command "npc remove %{_npcid}%"
+        send "&7Dein Eisengolem ist verschwunden!" to player
 
 command /team <text>:
     trigger:
