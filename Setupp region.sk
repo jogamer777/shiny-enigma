@@ -5,6 +5,7 @@
 #/rg flag team_rot_main interact deny    
 /rg flag team_rot_main pvp allow        
 /rg addmember team_rot_main g:team-rot
+/rg flag team_rot_main vine-growth deny
 
    
 
@@ -16,6 +17,7 @@
 #/rg flag team_blau_main interact deny    
 /rg flag team_blau_main pvp allow         
 /rg addmember team_blau_main g:team-blau
+/rg flag team_blau_main vine-growth deny
 
 
 
