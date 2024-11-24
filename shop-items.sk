@@ -1,0 +1,37 @@
+on right click with honeycomb:
+    if {phase.active} is 1:
+        spawn iron golem at player's location
+        set {_golem} to last spawned entity
+        set {temporary_golem.%player%.%uuid of {_golem}%} to {_golem} # Speichere den Golem für diesen Spieler
+        send "&7Ein Eisengolem wurde für dich gespawnt und greift Feinde an!" to player
+        remove 1 of honeycomb from player's inventory
+
+        # Eisengolem angreifen lassen
+        loop all players:
+            if {team.%loop-player%} is not {team.%player%}:  # Wenn Spieler im anderen Team
+                set {_target} to loop-player
+                execute console command "data merge entity %uuid of {_golem}% {AngryAt:[{_target}]}"
+
+        # Timer, um den Golem nach 60 Sekunden zu entfernen
+        wait 60 seconds
+        if {_golem} is alive:
+            kill {_golem}
+            delete {temporary_golem.%player%.%uuid of {_golem}%}
+            send "&7Dein Eisengolem ist verschwunden!" to player
+
+
+command /team <text>:
+    trigger:
+        if arg-1 is "red":
+            set {team.%player%} to "red"
+            execute console command "lp user %player% parent add team-rot"
+            execute console command "lp user %player% parent remove team-blau"
+            send "&cDu bist jetzt im Team Rot!" to player
+        else if arg-1 is "blue":
+            set {team.%player%} to "blue"
+            execute console command "lp user %player% parent add team-blau"
+            execute console command "lp user %player% parent remove team-rot" 
+            send "&9Du bist jetzt im Team Blau!" to player
+        else:
+            send "&7Nutze: /team <red/blue>" to player
+                
