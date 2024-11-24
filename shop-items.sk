@@ -1,30 +1,29 @@
 on right click with honeycomb:
     if {phase.active} is 1:
-        # Spawn a Citizens 2 Iron Golem NPC
-        execute console command "npc create Aggressive_Golem --type IRON_GOLEM"
-        set {_golem} to last spawned npc
-        set {_npcid} to id of {_golem}
+        # Überprüfen, ob der Spieler bereits einen Golem hat
+        if {golem.%player%} is not set:
+            # Golem mit Citizens erstellen (über Konsolenbefehl)
+            execute console command "npc create golem --name %player%'s Golem"
 
-        # Save NPC data for future removal
-        set {temporary_golem.%player%.%{_npcid}%} to {_npcid}
-        send "&7Ein aggressiver Eisengolem wurde gespawnt, der Feinde angreift!" to player
-        remove 1 of honeycomb from player's inventory
+            # Golem als NPC setzen
+            set {_golem} to last spawned entity  # Speichert den zuletzt erstellten NPC (Golem)
+            set {golem.%player%} to {_golem}   # Speichert den Golem für den Spieler
 
-        # Configure NPC to target the nearest enemy team player
-        execute console command "npc select %{_npcid}%"  # Select this NPC
-        execute console command "npc path"  # Enable pathing for the NPC
-        execute console command "npc lookclose true"  # Make NPC look at nearby players
-        execute console command "npc attack true"  # Enable aggression
+            # Setzt das Ziel des Golems auf den nächstgelegenen Gegner
+            set {_team} to {team.%player%}  # Holen des Teams des Spielers
+            loop all players:
+                if {team.%loop-player%} is not {_team}:  # Wenn der Spieler im gegnerischen Team ist
+                    set {_target} to loop-player
+                    execute console command "citizens npc select {_golem}"
+                    execute console command "citizens npc set target {_target}"
 
-        # Set targeting to opposite team
-        loop all players:
-            if {team.%loop-player%} is not {team.%player%}:  # Opposite team
-                execute console command "npc target add entity %loop-player%"
-
-        # Remove Golem after 60 seconds
-        wait 60 seconds
-        execute console command "npc remove %{_npcid}%"
-        send "&7Dein Eisengolem ist verschwunden!" to player
+            send "&7Ein Eisengolem wurde für dich gespawnt und wird das gegnerische Team angreifen!" to player
+            remove 1 of honeycomb from player's inventory
+        else:
+            send "&cDu hast bereits einen Eisengolem! Er wird nur einen Golem gleichzeitig haben." to player
+            # Refund der Honigwabe
+            remove 1 of honeycomb from player's inventory
+            give 1 of honeycomb to player
 
 command /team <text>:
     trigger:
@@ -40,4 +39,30 @@ command /team <text>:
             send "&9Du bist jetzt im Team Blau!" to player
         else:
             send "&7Nutze: /team <red/blue>" to player
-                
+
+on right click with golden apple:
+    if {phase.active} is 1 or 2 or 3:  # Nur in bauphase  
+        add 1 to {respawns.%player%}  # Spieler erhält einen zusätzlichen Respawn
+        send "&6+1 Respawn! Du hast jetzt %{respawns.%player%}% Respawns." to player
+        remove 1 of golden apple from player's inventory
+
+    else:         
+        send "&cNur in phase 1 bis 2 verfügbar, Pech gehabt!" to player        
+
+command /givegoldencarrot:
+    trigger:
+        give player 1 golden carrot named "&6Special Golden Carrot" with lore "&eCan be consumed for permanent health boost!"
+        send "&aYou received a &6Special Golden Carrot&7!" to player
+
+command /givegoldencarrot-reset:
+    trigger:
+        set player's max health to 10
+        send "&a+2 Maximum Health! Your total health is now %{player health}%." to player
+
+on right click:
+    if player's tool is golden carrot named "&6Special Golden Carrot" with lore "&eCan be consumed for permanent health boost!":
+        add 2 to player's max health
+        send "&a+2 Maximum Health! Your total health is now %{player health}%." to player
+        remove 1 of golden carrot named "&6Special Golden Carrot" with lore "&eCan be consumed for permanent health boost!" from the player's inventory
+    else if player's tool is golden carrot:
+        send "&cThis is just a normal Golden Carrot! It has no special effects." to player
