@@ -1,6 +1,6 @@
 # Definiere globale Variablen für den Phasenstatus und die Team-Spawns
 variables:
-    {phase.active} = 1 # Möglichkeiten: 
+    {phase.active} = 1 # Möglichkeiten: none =1 phase 1 =2 phase 2 =3 phase 3 =4 
     #{team.spawns.red} = location(-50, -60, 9, world "world") # Beispiel-Koordinaten für das rote Team
     #{team.spawns.blue} = location(-50, -60, -77, world "world") # Beispiel-Koordinaten für das blaue Team
     #{team.fight_spawns.red} = location(-51, -60, -15, world "world") # Beispiel-Koordinaten für das rote Team Bett
@@ -29,10 +29,10 @@ command /startphase1:
                 # Spieler basierend auf ihrer Gruppe teleportieren
                 loop all players:
                     if loop-player has permission "group.team-rot":
-                        teleport loop-player to location(-50, -60, 9, world "world") # Beispiel-Koordinaten für das rote Team
+                        teleport loop-player to location(-50.5, -60, 9.5, world "world") # Beispiel-Koordinaten für das rote Team
                         send "&cDu wurdest in den Spawn deines Teams teleportiert!" to loop-player
                     else if loop-player has permission "group.team-blau":
-                        teleport loop-player to location(-50, -60, -77, world "world") # Beispiel-Koordinaten für das blaue Team
+                        teleport loop-player to location(-50.5, -60, -77.5, world "world") # Beispiel-Koordinaten für das blaue Team
                         send "&9Du wurdest in den Spawn deines Teams teleportiert!" to loop-player
                     else:
                         send "&eDu bist in keinem Team und wurdest nicht teleportiert." to loop-player
@@ -73,10 +73,10 @@ command /startphase3:
                 execute console command "say Phase 3 beginnt jetzt! Alle Spieler werden in die Mitte teleportiert."
                 loop all players:
                     if loop-player has permission "group.team-rot":
-                        teleport loop-player to location(-51, -60, -15, world "world") # Beispiel-Koordinaten für das rote Team
+                        teleport loop-player to location(-51.5, -60, -15.5, world "world") # Beispiel-Koordinaten für das rote Team
                         send "&cDu wurdest in den Spawn deines Teams teleportiert!" to loop-player
                     else if loop-player has permission "group.team-blau":
-                        teleport loop-player to location(-50, -60, -43, world "world") # Beispiel-Koordinaten für das blaue Team
+                        teleport loop-player to location(-50.5, -60, -43.5, world "world") # Beispiel-Koordinaten für das blaue Team
                         send "&9Du wurdest in den Spawn deines Teams teleportiert!" to loop-player
                     else:
                         send "&eDu bist in keinem Team und wurdest nicht teleportiert." to loop-player
@@ -101,22 +101,81 @@ command /endgame:
 
 on block break:
     # Prüfen, ob der Block ein Bett ist
-    if event-block is bed:
+    if event-block is black_bed:
+        send "&cDu hast KEINE Menschenrechte!" to player
         # Überprüfen, ob das Zerstören des Bettes an einer bestimmten Position stattfindet
-        if event-block's location is location(-50, -60, -43, world "world"):  # Position des roten Bettes
-            # Aktion, wenn das rote Bett zerstört wurde
-            send "&cDas rote Team hat sein Bett verloren!" to all players
-            execute console command "/endgame"  # Spiel beenden, wenn das rote Bett zerstört wurde
-            set {phase.active} to "GAME_END"  # Spielstatus auf GAME_END setzen
-            stop
-        else if event-block's location is location(-50, -60, -43, world "world"):  # Position des blauen Bettes
+#       if event-block's location is location(-116, -60, 3, world "world"):  # Position des roten Bettes
+#           # Aktion, wenn das rote Bett zerstört wurde
+#           send "&cDas rote Team hat sein Bett verloren!" to all players
+#           execute console command "/endgame"  # Spiel beenden, wenn das rote Bett zerstört wurde
+#           set {phase.active} to "GAME_END"  # Spielstatus auf GAME_END setzen
+#           stop
+#      else if event-block's location is location(-50.5, -60, -43.5, world "world"):  # Position des blauen Bettes
             # Aktion, wenn das blaue Bett zerstört wurde
-            send "&9Das blaue Team hat sein Bett verloren!" to all players
-            execute console command "/endgame"  # Spiel beenden, wenn das blaue Bett zerstört wurde
-            set {phase.active} to "GAME_END"  # Spielstatus auf GAME_END setzen
-            stop
+#            send "&9Das blaue Team hat sein Bett verloren!" to all players
+#            execute console command "/endgame"  # Spiel beenden, wenn das blaue Bett zerstört wurde
+#            set {phase.active} to "GAME_END"  # Spielstatus auf GAME_END setzen
+#            stop
+    if event-block is blue_bed:
+        send "&1blaues bed" to player
+        set {team.bed_status.blau} to false
 
 command /test-bed:
     trigger:
         execute console command "/setblock 0 0 0 minecraft:black_bed[ part=head]"
         execute console command "/setblock 0 0 1 minecraft:black_bed[ part=foot]"
+
+
+
+variables:
+    {team.bed_status.red} = true  # Bett des roten Teams steht
+    {team.bed_status.blue} = true  # Bett des blauen Teams steht
+    {respawns.%player%} = 3  # Jeder Spieler hat anfangs 3 Respawns in Phase 3
+
+# Event: Spieler stirbt
+on death:
+    if {phase.active} is 4:  # Nur während der Kampfphase
+        if victim has permission "group.team-rot":  # Spieler gehört zum roten Team
+            if {team.bed_status.red} is true:  # Rotes Bett steht noch
+                if {respawns.%victim%} > 0:  # Spieler hat noch Respawns
+                    subtract 1 from {respawns.%victim%}
+                    send "&cDu bist gestorben! Respawns übrig: %{respawns.%victim%}%" to victim
+                    wait 3 seconds  # Zeit bis zum Respawn
+                    teleport victim to location(-50.5, -60, 9.5, world "world")  # Zurück zum Spawn des roten Teams
+                    stop
+                else:
+                    send "&cKeine Respawns mehr! Du bist aus dem Spiel ausgeschieden." to victim
+                    execute console command "minecraft:ban %victim% Du bist ausgeschieden!"  # Spieler entfernen
+                    stop
+            else:
+                send "&cDein Bett wurde zerstört! Du kannst nicht mehr respawnen." to victim
+                execute console command "minecraft:ban %victim% Du bist ausgeschieden!"  # Spieler entfernen
+                stop
+        else if victim has permission "group.team-blau":  # Spieler gehört zum blauen Team
+            if {team.bed_status.blue} is true:  # Blaues Bett steht noch
+                if {respawns.%victim%} > 0:  # Spieler hat noch Respawns
+                    subtract 1 from {respawns.%victim%}
+                    send "&9Du bist gestorben! Respawns übrig: %{respawns.%victim%}%" to victim
+                    wait 3 seconds  # Zeit bis zum Respawn
+                    teleport victim to location(-50.5, -60, -77.5, world "world")  # Zurück zum Spawn des blauen Teams
+                    stop
+                else:
+                    send "&9Keine Respawns mehr! Du bist aus dem Spiel ausgeschieden." to victim
+                    execute console command "minecraft:ban %victim% Du bist ausgeschieden!"  # Spieler entfernen
+                    stop
+            else:
+                send "&9Dein Bett wurde zerstört! Du kannst nicht mehr respawnen." to victim
+                execute console command "minecraft:ban %victim% Du bist ausgeschieden!"  # Spieler entfernen
+                stop
+
+# Event: Bett wird zerstört
+on block break:
+    if {phase.active} is "PHASE3":  # Nur während der Kampfphase
+        if event-block's location is {team.fight_spawns.red}:  # Rotes Bett
+            set {team.bed_status.red} to false
+            send "&cDas Bett des roten Teams wurde zerstört! Keine Respawns mehr für das Team." to all players
+        else if event-block's location is {team.fight_spawns.blue}:  # Blaues Bett
+            set {team.bed_status.blue} to false
+            send "&9Das Bett des blauen Teams wurde zerstört! Keine Respawns mehr für das Team." to all players
+
+        
