@@ -98,7 +98,7 @@ on right click:
 
         else:         
             send "&cNur in phase 1 bis 2 verfügbar, Pech gehabt!" to player     
-
+    if player's tool is commpass named "&6Radar Compass" with lore "&eMarks all enemy Player":
 
         
         
