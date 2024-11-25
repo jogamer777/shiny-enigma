@@ -6,7 +6,7 @@ variables:
 
 command /enemy:
     trigger:
-        send "{enemy.team.%player%}"
+        send "{enemy.team.%player%} is "
 
 command /team <text>:
     trigger:
@@ -24,15 +24,7 @@ command /team <text>:
             set {enemy.team.%player%} to false
         else:
             send "&7Nutze: /team <red/blue>" to player
-
-on right click with golden apple:
-    if {phase.active} is 1 or 2 or 3:  # Nur in bauphase  
-        add 1 to {respawns.%player%}  # Spieler erhält einen zusätzlichen Respawn
-        send "&6+1 Respawn! Du hast jetzt %{respawns.%player%}% Respawns." to player
-        remove 1 of golden apple from player's inventory
-
-    else:         
-        send "&cNur in phase 1 bis 2 verfügbar, Pech gehabt!" to player        
+     
 
 command /givegoldencarrot:
     trigger:
