@@ -155,10 +155,15 @@ command /leben+1:
         add 1 to {respawns.%player%} 
         send "%player% hat %{respawns.%player%}% " to player
 
+
+
+# Event: Spieler stirbt
+# Globale Variablen für den Status und Timer
 variables:
-    {team.bed_status.red} = true  # Bett des roten Teams steht
-    {team.bed_status.blue} = true  # Bett des blauen Teams steht
+    {team.bed_status.red} = true  # Rotes Bett steht
+    {team.bed_status.blue} = true  # Blaues Bett steht
     {respawns.%player%} = 3  # Jeder Spieler hat anfangs 3 Respawns in Phase 3
+    {sudden_death_timer} = 600  # Timer für Sudden Death (10 Minuten)
 
 # Event: Spieler stirbt
 on death:
@@ -169,7 +174,6 @@ on death:
                     subtract 1 from {respawns.%victim%}
                     send "&cDu bist gestorben! Respawns übrig: %{respawns.%victim%}%" to victim
                     wait 3 seconds  # Zeit bis zum Respawn
-                    #teleport victim to location(-178.5, -40, -70.5, world "world")  # Zurück zum Spawn des roten Teams
                     stop
                 else:
                     send "&cKeine Respawns mehr! Du bist aus dem Spiel ausgeschieden." to victim
@@ -185,7 +189,6 @@ on death:
                     subtract 1 from {respawns.%victim%}
                     send "&9Du bist gestorben! Respawns übrig: %{respawns.%victim%}%" to victim
                     wait 3 seconds  # Zeit bis zum Respawn
-                    #teleport victim to location(-178.5, -40, 13.5, world "world")  # Zurück zum Spawn des blauen Teams
                     stop
                 else:
                     send "&9Keine Respawns mehr! Du bist aus dem Spiel ausgeschieden." to victim
@@ -196,14 +199,55 @@ on death:
                 execute console command "minecraft:kick %victim% Du bist ausgeschieden!"  # Spieler entfernen
                 stop
 
+
 # Event: Bett wird zerstört
 on block break:
     if {phase.active} is 4:  # Nur während der Kampfphase
         if event-block is red_bed:  # Rotes Bett
             set {team.bed_status.red} to false
             send "&cDas Bett des roten Teams wurde zerstört! Keine Respawns mehr für das Team." to all players
+            # Prüfen, ob alle Spieler des roten Teams tot sind
+            loop all players:
+                if loop-player has permission "group.team-rot":
+                    if loop-player is alive and {respawn.%player%} is > 0:
+                        stop  # Ein Spieler lebt noch, das Team ist nicht verloren
+            send "&cDas rote Team hat verloren!" to all players
+            
         else if event-block is blue_bed:  # Blaues Bett
             set {team.bed_status.blue} to false
             send "&9Das Bett des blauen Teams wurde zerstört! Keine Respawns mehr für das Team." to all players
+            # Prüfen, ob alle Spieler des blauen Teams tot sind
+            loop all players:
+                if loop-player has permission "group.team-blau":
+                    if loop-player is alive and {respawn.%player%} is > 0:
+                        stop  # Ein Spieler lebt noch, das Team ist nicht verloren
+            send "&9Das blaue Team hat verloren!" to all players
+            
 
-        
+# Sudden Death Timer: Zerstörung der Betten nach der festgelegten Zeit
+task "sudden_death_timer" every 1 second:
+    if {phase.active} is 4:  # Nur während der Kampfphase
+        subtract 1 from {sudden_death_timer}
+        if {sudden_death_timer} <= 0:
+            # Zerstörung der Betten nach Ablauf des Timers
+            if {team.bed_status.red} is true:
+                execute console command "/setblock -178.5 -40 -58.5 minecraft:air"  # Zerstörung des roten Bettes
+                set {team.bed_status.red} to false
+            if {team.bed_status.blue} is true:
+                execute console command "/setblock -178.5 -40 13.5 minecraft:air"  # Zerstörung des blauen Bettes
+                set {team.bed_status.blue} to false
+            send "&cDie Betten beider Teams wurden zerstört! Sudden Death ist nun aktiv!" to all players
+            execute console command "/endgame"  # Spiel beenden
+            stop
+
+
+# Event: Spielende (durch Befehl)
+command /endgame:
+    trigger:
+        if player has permission "group.game-admin":
+            set {phase.active} to 5
+            send "&cDas Spiel ist beendet!" to all players
+            execute console command "say Spiel ist vorbei! Herzlichen Glückwunsch an die Gewinner!"
+ 
+        else:
+            send "&cDu hast KEINE Menschenrechte!" to player
