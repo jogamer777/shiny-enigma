@@ -2,32 +2,7 @@ variables:
     {enemy.team.%player%} = true
 
 
-on right click with honeycomb:
-    if {phase.active} is 1:
-        # Überprüfen, ob der Spieler bereits einen Golem hat
-        if {golem.%player%} is not set:
-            # Golem mit Citizens erstellen (über Konsolenbefehl)
-            execute console command "npc create golem --name %player%'s Golem"
 
-            # Golem als NPC setzen
-            set {_golem} to last spawned entity  # Speichert den zuletzt erstellten NPC (Golem)
-            set {golem.%player%} to {_golem}   # Speichert den Golem für den Spieler
-
-            # Setzt das Ziel des Golems auf den nächstgelegenen Gegner
-            set {_team} to {team.%player%}  # Holen des Teams des Spielers
-            loop all players:
-                if {team.%loop-player%} is not {_team}:  # Wenn der Spieler im gegnerischen Team ist
-                    set {_target} to loop-player
-                    execute console command "citizens npc select {_golem}"
-                    execute console command "citizens npc set target {_target}"
-
-            send "&7Ein Eisengolem wurde für dich gespawnt und wird das gegnerische Team angreifen!" to player
-            remove 1 of honeycomb from player's inventory
-        else:
-            send "&cDu hast bereits einen Eisengolem! Er wird nur einen Golem gleichzeitig haben." to player
-            # Refund der Honigwabe
-            remove 1 of honeycomb from player's inventory
-            give 1 of honeycomb to player
 
 command /enemy:
     trigger:
@@ -89,6 +64,12 @@ command /givecompass:
         give player a compass named "&6Radar Compass" with lore "&eMarks all enemy Player"
         send "&aDu hast den Radar-Kompass erhalten!" to player
 
+command /getgolemitem:
+    trigger:
+        give player a honeycomb named "&6Golem Summoner" with lore "&eBeschwört einen Eisen-Golem," and "&eder die Gegner attackiert!"
+        send "&aDu hast das Golem-Beschwörer-Item erhalten!" to player
+
+
 
 on right click:
     if player's tool is golden carrot named "&6Special Golden Carrot" with lore "&eCan be consumed for permanent health boost!":
@@ -124,6 +105,28 @@ on right click:
     else:
         send "&cDies ist kein Radar-Kompass!" to player
 
+            #Iron Golem Test:
+on right click with honeycomb:
+    if player's tool is honeycomb named "&6Golem Summoner":
+        send "&aEisen-Golem beschworen!" to player
+        # Beschwöre den Golem in der Nähe des Spielers
+        summon iron golem at location of player
+        set {_golem} to last spawned entity
+        wait 1 tick
+        # Finde den nächsten gegnerischen Spieler
+        set {_nearest} to 0
+        set {_nearest.distance} to 9999
+        loop all players:
+            if {enemy.team.%loop-player%} is not {enemy.team.%player%}: # Gegnerisches Team
+                set {_distance} to distance between loop-player and {_golem}
+                if {_distance} < {_nearest.distance}:
+                    set {_nearest} to loop-player
+                    set {_nearest.distance} to {_distance}
+        if {_nearest} is not 0:
+            set target of {_golem} to {_nearest}
+            send "&cDer Eisen-Golem greift &e%{_nearest}%&c an!" to player
+        else:
+            send "&eKein Gegner in der Nähe! Der Eisen-Golem hat kein Ziel." to player
 
         
         
