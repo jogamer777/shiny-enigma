@@ -13,6 +13,8 @@ command /setstartphase1:
             execute console command "/rg flag neutral_zone -w world entry deny" 
             execute console command "/rg flag neutral_zone -w world pvp deny"
             execute console command "/rg flag neutral_zone -w world pvp deny"
+            execute console command "/rg flag team_rot_main -w world entry allow"
+            execute console command "/rg flag team_blau_main -w world entry allow"
             set {team.bed_status.red} to true
             set {team.bed_status.blue} to true
             loop all players:
@@ -92,6 +94,8 @@ command /startphase3:
                       #  set respawn location to location(-178.5, -40, 13.5, world "world")
                 
                 execute console command "/rg flag neutral_zone -w world pvp allow"
+                execute console command "/rg flag team_rot_main -w world entry deny"
+                execute console command "/rg flag team_blau_main -w world entry deny"
 
             else:
                 send "&cPhase 3 kann nicht gestartet werden, da Phase 2 nicht aktiv ist!" to player
