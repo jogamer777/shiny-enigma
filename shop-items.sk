@@ -1,3 +1,7 @@
+variables:
+    {enemy.team.%player%} = true
+
+
 on right click with honeycomb:
     if {phase.active} is 1:
         # Überprüfen, ob der Spieler bereits einen Golem hat
@@ -25,6 +29,10 @@ on right click with honeycomb:
             remove 1 of honeycomb from player's inventory
             give 1 of honeycomb to player
 
+command /enemy:
+    trigger:
+        send "{enemy.team.%player%}"
+
 command /team <text>:
     trigger:
         if arg-1 is "red":
@@ -32,11 +40,13 @@ command /team <text>:
             execute console command "lp user %player% parent add team-rot"
             execute console command "lp user %player% parent remove team-blau"
             send "&cDu bist jetzt im Team Rot!" to player
+            set {enemy.team.%player%} to true
         else if arg-1 is "blue":
             set {team.%player%} to "blue"
             execute console command "lp user %player% parent add team-blau"
             execute console command "lp user %player% parent remove team-rot" 
             send "&9Du bist jetzt im Team Blau!" to player
+            set {enemy.team.%player%} to false
         else:
             send "&7Nutze: /team <red/blue>" to player
 
@@ -74,6 +84,11 @@ command /givegoldenapple:
         give player 1 golden apple named "&6Golden Apple" with lore "&eAdds 1 Respawn to the player"
         send "&aYou received a &6Special rabbit's foot&7!" to player
 
+command /givecompass:
+    trigger:
+        give player a compass named "&6Radar Compass" with lore "&eMarks all enemy Player"
+        send "&aDu hast den Radar-Kompass erhalten!" to player
+
 
 on right click:
     if player's tool is golden carrot named "&6Special Golden Carrot" with lore "&eCan be consumed for permanent health boost!":
@@ -98,10 +113,17 @@ on right click:
 
         else:         
             send "&cNur in phase 1 bis 2 verfügbar, Pech gehabt!" to player     
-    if player's tool is commpass named "&6Radar Compass" with lore "&eMarks all enemy Player":
-        loop-player:
-            if {team.%player%} is not {team.%loop-player%}:
-                set {enemy.tea.%loop-player%} to true
+
+    if player's tool is compass named "&6Radar Compass" with lore "&eMarks all enemy Player":
+        send "&aRadar aktiviert! Alle feindlichen Spieler werden markiert." to player
+        loop all players:
+            if {enemy.team.%loop-player%} is not {enemy.team.%player%}: # Gegnerisches Team
+                apply glowing to loop-player for 5 seconds
+                send "&e%loop-player% wurde markiert!" to player
+        remove 1 of compass named "&6Radar Compass" with lore "&eMarks all enemy Player" from the player's inventory
+    else:
+        send "&cDies ist kein Radar-Kompass!" to player
+
 
         
         
