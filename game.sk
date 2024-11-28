@@ -90,12 +90,7 @@ command /startphase3:
                         send "&9You have been teleported to your team's spawn!" to loop-player
                     else:
                         send "&eYou are not in a team and have not been teleported." to loop-player
-                
-                loop all players:
-                    if loop-player has permission "group.team-rot":
-                      #  set respawn location to location(-178.5, -40, -70.5, world "world")
-                    else if loop-player has permission "group.team-blau":
-                      #  set respawn location to location(-178.5, -40, 13.5, world "world")
+            
                 
                 execute console command "/rg flag neutral_zone -w world pvp allow"
                 execute console command "/rg flag team_rot_main -w world entry deny"
