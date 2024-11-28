@@ -229,10 +229,14 @@ every 1 second:
         subtract 1 from {sudden_death_timer}
         if {sudden_death_timer} <= 0:
             if {team.bed_status.red} is true:
-                execute console command "/setblock -178.5 -40 -58.5 minecraft:air"  # Zerstörung des roten Bettes
+                execute console command "/setblock -179 -40 -59 minecraft:bedrock"
+                wait 1 tick
+                execute console command "/setblock -179 -40 -59 minecraft:air"  # Zerstörung des roten Bettes
                 set {team.bed_status.red} to false
             if {team.bed_status.blue} is true:
-                execute console command "/setblock -178.5 -40 13.5 minecraft:air"  # Zerstörung des blauen Bettes
+                execute console command "/setblock -179 -40 1 minecraft:bedrock"
+                wait 1 tick
+                execute console command "/setblock -179 -40 1 minecraft:air"  # Zerstörung des blauen Bettes
                 set {team.bed_status.blue} to false
             send "&cThe beds of both teams have been destroyed! Sudden Death is now active!" to all players
             execute console command "/endgame"
