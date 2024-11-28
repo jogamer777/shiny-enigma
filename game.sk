@@ -103,15 +103,7 @@ command /startphase3:
         else:
             send "&cYou have no Human Rights!" to player
 
-# Befehl für Spielende
-command /endgame:
-    trigger:
-        if player has permission "group.game-admin":
-            set {phase.active} to 5
-            send "&cDas Spiel ist beendet!" to all players
-            execute console command "say Game is over! Congratulations to the winners."
-        else:
-            send "&cYou have no Human Rights!" to player
+
 
 
 on respawn: #legt den respawn während den restlichen phasen fest
@@ -203,34 +195,39 @@ on death:
 
 # Event: Bett wird zerstört
 on block break:
-    if {phase.active} is 4:  # Nur während der Kampfphase
-        if event-block is red_bed:  # Rotes Bett
+    if {phase.active} is 4:
+        if event-block is red_bed:
             set {team.bed_status.red} to false
             send "&cThe red team's bed has been destroyed! No more respawns for the team." to all players
-            # Prüfen, ob alle Spieler des roten Teams tot sind
+            
+            # Überprüfen, ob alle Spieler des roten Teams ausgeschieden sind
+            set {_alive_players} to 0
             loop all players:
                 if loop-player has permission "group.team-rot":
-                    if loop-player is alive and {respawn.%player%} is > 0:
-                        stop  # Ein Spieler lebt noch, das Team ist nicht verloren
-            send "&cThe red team has lost!" to all players
-            
-        else if event-block is blue_bed:  # Blaues Bett
+                    if {respawns.%loop-player%} > 0:
+                        add 1 to {_alive_players}
+            if {_alive_players} is 0:
+                send "&cThe red team has lost!" to all players
+                
+        else if event-block is blue_bed:
             set {team.bed_status.blue} to false
             send "&9The blue team's bed has been destroyed! No more respawns for the team." to all players
-            # Prüfen, ob alle Spieler des blauen Teams tot sind
+            
+            # Überprüfen, ob alle Spieler des blauen Teams ausgeschieden sind
+            set {_alive_players} to 0
             loop all players:
                 if loop-player has permission "group.team-blau":
-                    if loop-player is alive and {respawn.%player%} is > 0:
-                        stop  # Ein Spieler lebt noch, das Team ist nicht verloren
-            send "&9The blue team has lost!" to all players
-            
+                    if {respawns.%loop-player%} > 0:
+                        add 1 to {_alive_players}
+            if {_alive_players} is 0:
+                send "&9The blue team has lost!" to all players
+    
 
 # Sudden Death Timer: Zerstörung der Betten nach der festgelegten Zeit
-task "sudden_death_timer" every 1 second:
+every 1 second:
     if {phase.active} is 4:  # Nur während der Kampfphase
         subtract 1 from {sudden_death_timer}
         if {sudden_death_timer} <= 0:
-            # Zerstörung der Betten nach Ablauf des Timers
             if {team.bed_status.red} is true:
                 execute console command "/setblock -178.5 -40 -58.5 minecraft:air"  # Zerstörung des roten Bettes
                 set {team.bed_status.red} to false
@@ -238,8 +235,8 @@ task "sudden_death_timer" every 1 second:
                 execute console command "/setblock -178.5 -40 13.5 minecraft:air"  # Zerstörung des blauen Bettes
                 set {team.bed_status.blue} to false
             send "&cThe beds of both teams have been destroyed! Sudden Death is now active!" to all players
-            execute console command "/endgame"  # Spiel beenden
-            stop
+            execute console command "/endgame"
+
 
 
 # Event: Spielende (durch Befehl)
