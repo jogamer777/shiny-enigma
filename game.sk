@@ -34,25 +34,25 @@ command /startphase1:
         if player has permission "group.game-admin":
             if {phase.active} is 1:
                 set {phase.active} to 2
-                send "&aPhase 1 wurde gestartet! Spieler werden in ihre Team-Spawns teleportiert." to all players
+                send "&aPhase 1 has started! Players are teleported to their team spawns." to all players
 
                 # Spieler basierend auf ihrer Gruppe teleportieren
                 loop all players:
                     if loop-player has permission "group.team-rot":
                         teleport loop-player to location(-178.5, -40, -94.5, world "world") # Beispiel-Koordinaten für das rote Team
-                        send "&cDu wurdest in den Spawn deines Teams teleportiert!" to loop-player
+                        send "&cYou have been teleported to your team's spawn!" to loop-player
                     else if loop-player has permission "group.team-blau":
                         teleport loop-player to location(-178.5, -40, 37.5, world "world") # Beispiel-Koordinaten für das blaue Team
-                        send "&9Du wurdest in den Spawn deines Teams teleportiert!" to loop-player
+                        send "&9You have been teleported to your team's spawn!" to loop-player
                     else:
-                        send "&eDu bist in keinem Team und wurdest nicht teleportiert." to loop-player
+                        send "&eYou are not in a team and have not been teleported." to loop-player
 
                 # Zusätzliche Aktionen
-                execute console command "say Phase 1 hat begonnen! Bereitet euch vor!"
+                execute console command "say Phase 1 has begun! Prepare yourselves!"
                 wait 5 minutes
                 execute console command "/startphase2"
             else:
-                send "&cEine Phase ist bereits aktiv: %{phase.active}%!" to player
+                send "&cOne phase is already active: %{phase.active}%!" to player
         else:
             send "&cYou have no Human Rights!" to player
 
@@ -63,13 +63,13 @@ command /startphase2:
         if player has permission "group.game-admin":
             if {phase.active} is 2:
                 set {phase.active} to 3
-                send "&aPhase 2 wurde gestartet!" to all players
-                execute console command "say Phase 2 ist aktiv! Die neutrale Zone ist nun freigegeben."
+                send "&aPhase 2 has started!" to all players
+                execute console command "say Phase 2 is active! The neutral zone is now enabled."
                 execute console command "/rg flag neutral_zone -w world entry allow"
                 wait 5 minutes
                 execute console command "/startphase3"
             else:
-                send "&cPhase 2 kann nicht gestartet werden, da Phase 1 nicht aktiv ist!" to player
+                send "&cPhase 2 cannot be started because phase 1 is not active!" to player
         else:
             send "&cYou have no Human Rights!" to player
 
@@ -79,17 +79,17 @@ command /startphase3:
         if player has permission "group.game-admin":
             if {phase.active} is 3:
                 set {phase.active} to 4
-                send "&aPhase 3 (Kampfphase) wurde gestartet!" to all players
-                execute console command "say Phase 3 beginnt jetzt! Alle Spieler werden in die Mitte teleportiert."
+                send "&aPhase 3 (combat phase) has started!" to all players
+                execute console command "say Phase 3 begins now! All players are teleported to the centre."
                 loop all players:
                     if loop-player has permission "group.team-rot":
                         teleport loop-player to location(-178.5, -40, -70.5, world "world") # Beispiel-Koordinaten für das rote Team
-                        send "&cDu wurdest in den Spawn deines Teams teleportiert!" to loop-player
+                        send "&cYou have been teleported to your team's spawn!" to loop-player
                     else if loop-player has permission "group.team-blau":
                         teleport loop-player to location(-178.5, -40, 13.5, world "world") # Beispiel-Koordinaten für das blaue Team
-                        send "&9Du wurdest in den Spawn deines Teams teleportiert!" to loop-player
+                        send "&9You have been teleported to your team's spawn!" to loop-player
                     else:
-                        send "&eDu bist in keinem Team und wurdest nicht teleportiert." to loop-player
+                        send "&eYou are not in a team and have not been teleported." to loop-player
                 
                 loop all players:
                     if loop-player has permission "group.team-rot":
@@ -104,7 +104,7 @@ command /startphase3:
                 execute console command "/npc despawn"
 
             else:
-                send "&cPhase 3 kann nicht gestartet werden, da Phase 2 nicht aktiv ist!" to player
+                send "&cPhase 3 cannot be started because phase 2 is not active!" to player
         else:
             send "&cYou have no Human Rights!" to player
 
@@ -114,9 +114,9 @@ command /endgame:
         if player has permission "group.game-admin":
             set {phase.active} to 5
             send "&cDas Spiel ist beendet!" to all players
-            execute console command "say Spiel ist vorbei! Herzlichen Glückwunsch an die Gewinner."
+            execute console command "say Game is over! Congratulations to the winners."
         else:
-            send "&cDu hast KEINE Menschenrechte!" to player
+            send "&cYou have no Human Rights!" to player
 
 
 on respawn: #legt den respawn während den restlichen phasen fest
@@ -178,31 +178,31 @@ on death:
             if {team.bed_status.red} is true:  # Rotes Bett steht noch
                 if {respawns.%victim%} > 0:  # Spieler hat noch Respawns
                     subtract 1 from {respawns.%victim%}
-                    send "&cDu bist gestorben! Respawns übrig: %{respawns.%victim%}%" to victim
+                    send "&cYou have died! Respawns left: %{respawns.%victim%}%" to victim
                     wait 3 seconds  # Zeit bis zum Respawn
                     stop
                 else:
-                    send "&cKeine Respawns mehr! Du bist aus dem Spiel ausgeschieden." to victim
-                    execute console command "minecraft:kick %victim% Du bist ausgeschieden!"  # Spieler entfernen
+                    send "&cNo more respawns! You have been eliminated from the game." to victim
+                    execute console command "minecraft:kick %victim% You have been eliminated!"  # Spieler entfernen
                     stop
             else:
-                send "&cDein Bett wurde zerstört! Du kannst nicht mehr respawnen." to victim
-                execute console command "minecraft:kick %victim% Du bist ausgeschieden!"  # Spieler entfernen
+                send "&cYour bed has been destroyed! You can no longer respawn." to victim
+                execute console command "minecraft:kick %victim% You have been eliminated!"  # Spieler entfernen
                 stop
         else if victim has permission "group.team-blau":  # Spieler gehört zum blauen Team
             if {team.bed_status.blue} is true:  # Blaues Bett steht noch
                 if {respawns.%victim%} > 0:  # Spieler hat noch Respawns
                     subtract 1 from {respawns.%victim%}
-                    send "&9Du bist gestorben! Respawns übrig: %{respawns.%victim%}%" to victim
+                    send "&9You have died! Respawns left: %{respawns.%victim%}%" to victim
                     wait 3 seconds  # Zeit bis zum Respawn
                     stop
                 else:
-                    send "&9Keine Respawns mehr! Du bist aus dem Spiel ausgeschieden." to victim
-                    execute console command "minecraft:kick %victim% Du bist ausgeschieden!"  # Spieler entfernen
+                    send "&9No more respawns! You have been eliminated from the game." to victim
+                    execute console command "minecraft:kick %victim% You have been eliminated!"  # Spieler entfernen
                     stop
             else:
-                send "&9Dein Bett wurde zerstört! Du kannst nicht mehr respawnen." to victim
-                execute console command "minecraft:kick %victim% Du bist ausgeschieden!"  # Spieler entfernen
+                send "&9Your bed has been destroyed! You can no longer respawn." to victim
+                execute console command "minecraft:kick %victim% You have been eliminated!"  # Spieler entfernen
                 stop
 
 
@@ -211,23 +211,23 @@ on block break:
     if {phase.active} is 4:  # Nur während der Kampfphase
         if event-block is red_bed:  # Rotes Bett
             set {team.bed_status.red} to false
-            send "&cDas Bett des roten Teams wurde zerstört! Keine Respawns mehr für das Team." to all players
+            send "&cThe red team's bed has been destroyed! No more respawns for the team." to all players
             # Prüfen, ob alle Spieler des roten Teams tot sind
             loop all players:
                 if loop-player has permission "group.team-rot":
                     if loop-player is alive and {respawn.%player%} is > 0:
                         stop  # Ein Spieler lebt noch, das Team ist nicht verloren
-            send "&cDas rote Team hat verloren!" to all players
+            send "&cThe red team has lost!" to all players
             
         else if event-block is blue_bed:  # Blaues Bett
             set {team.bed_status.blue} to false
-            send "&9Das Bett des blauen Teams wurde zerstört! Keine Respawns mehr für das Team." to all players
+            send "&9The blue team's bed has been destroyed! No more respawns for the team." to all players
             # Prüfen, ob alle Spieler des blauen Teams tot sind
             loop all players:
                 if loop-player has permission "group.team-blau":
                     if loop-player is alive and {respawn.%player%} is > 0:
                         stop  # Ein Spieler lebt noch, das Team ist nicht verloren
-            send "&9Das blaue Team hat verloren!" to all players
+            send "&9The blue team has lost!" to all players
             
 
 # Sudden Death Timer: Zerstörung der Betten nach der festgelegten Zeit
@@ -242,7 +242,7 @@ task "sudden_death_timer" every 1 second:
             if {team.bed_status.blue} is true:
                 execute console command "/setblock -178.5 -40 13.5 minecraft:air"  # Zerstörung des blauen Bettes
                 set {team.bed_status.blue} to false
-            send "&cDie Betten beider Teams wurden zerstört! Sudden Death ist nun aktiv!" to all players
+            send "&cThe beds of both teams have been destroyed! Sudden Death is now active!" to all players
             execute console command "/endgame"  # Spiel beenden
             stop
 
@@ -252,8 +252,8 @@ command /endgame:
     trigger:
         if player has permission "group.game-admin":
             set {phase.active} to 5
-            send "&cDas Spiel ist beendet!" to all players
-            execute console command "say Spiel ist vorbei! Herzlichen Glückwunsch an die Gewinner!"
+            send "&cThe game is over!" to all players
+            execute console command "say Game is over! Congratulations to the winners!"
  
         else:
             send "&cDu hast KEINE Menschenrechte!" to player
