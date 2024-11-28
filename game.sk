@@ -116,7 +116,7 @@ command /endgame:
             send "&cDas Spiel ist beendet!" to all players
             execute console command "say Spiel ist vorbei! Herzlichen Glückwunsch an die Gewinner."
         else:
-            send "&cYou have no Human Rights!" to player
+            send "&cDu hast KEINE Menschenrechte!" to player
 
 
 on respawn: #legt den respawn während den restlichen phasen fest
@@ -256,4 +256,4 @@ command /endgame:
             execute console command "say Spiel ist vorbei! Herzlichen Glückwunsch an die Gewinner!"
  
         else:
-            send "&cYou have no Human Rights!" to player
+            send "&cDu hast KEINE Menschenrechte!" to player
