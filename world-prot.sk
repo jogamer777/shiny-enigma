@@ -1,0 +1,33 @@
+#notifys player wich region they have entered and exited
+on region enter:
+    send action bar "You entered &2%region%" to player
+#on region exit:
+ #   send action bar "You exited &c%region%" to player
+
+on place:
+    if player is not op: 
+        if event-block is not wool or obsidian or end stone or cobweb or stone:    
+            if "%region at event-block%" contains "neutral_zone in world world" or "team_rot_main in world world" or "team_blau_main in world world":
+                send "&cYou can not place &l%type of block% in this region" to player
+                cancel event
+
+on mine:
+    if player is not op:
+        if event-block is not wool or obsidian or end stone or cobweb or stone:    
+            if "%region at event-block%" contains "neutral_zone in world world" or "team_rot_main in world world" or "team_blau_main in world world":
+                send "&cYou can not brake &l%type of block% in this region" to player
+                cancel event
+
+on place:
+    if player is not op: 
+        if event-block is not stone or wool or obsidian or end stone or cobweb:    
+            if "%region at event-block%" contains "mine in world world" and "neutral_zone in world world" or "team_rot_main in world world" or "team_blau_main in world world":
+                send "&cYou can not place &l%type of block% in this region" to player
+                cancel event
+
+on mine:
+    if player is not op:
+        if event-block is not stone or wool or obsidian or end stone or cobweb:    
+            if "%region at event-block%" contains "mine in world world" and "neutral_zone in world world" or "team_rot_main in world world" or "team_blau_main in world world":
+                send "&cYou can not brake &l%type of block% in this region" to player
+                cancel event
