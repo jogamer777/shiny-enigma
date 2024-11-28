@@ -17,8 +17,12 @@ command /setstartphase1:
             execute console command "/rg flag team_blau_main -w world entry allow"
             set {team.bed_status.red} to true
             set {team.bed_status.blue} to true
+            execute console command "/npc sel 0"
+            execute console command "/npc spawn"
             loop all players:
                 set {respawns.%loop-player%} to 3
+                set loop-player's walk speed to 0.2
+                set loop-player's max health to 10
 
         else:
             send "&cDu hast KEINE Menschenrechte!" to player
@@ -96,6 +100,8 @@ command /startphase3:
                 execute console command "/rg flag neutral_zone -w world pvp allow"
                 execute console command "/rg flag team_rot_main -w world entry deny"
                 execute console command "/rg flag team_blau_main -w world entry deny"
+                execute console command "/npc sel 0"
+                execute console command "/npc despawn"
 
             else:
                 send "&cPhase 3 kann nicht gestartet werden, da Phase 2 nicht aktiv ist!" to player

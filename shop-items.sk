@@ -98,44 +98,47 @@ on right click:
 
             #Iron Golem Test:
 on right click with honeycomb:
-    if player's tool is honeycomb named "&6Golem Summoner":
-        send "&aEisen-Golem beschworen!" to player
-        # Beschwöre den Golem in der Nähe des Spielers
-        summon iron golem at location of player
-        set {_golem} to last spawned entity
-        wait 1 tick
-        # Finde den nächsten gegnerischen Spieler
-        set {_nearest} to ""
-        set {_nearest.distance} to 9999
-        loop all players:
-            if {enemy.team.%loop-player%} is not {enemy.team.%player%}: # Gegnerisches Team
-                set {_distance} to distance between loop-player and {_golem}
-                if {_distance} < {_nearest.distance}:
-                    set {_nearest} to loop-player
-                    set {_nearest.distance} to {_distance}
-        if {_nearest} is not "":
-            set target of {_golem} to {_nearest}
-            send "&cDer Eisen-Golem greift &e%{_nearest}%&c an!" to player
-            # Überwache Golem und Ziel
-            while {_golem} is alive:
-                # Überprüfe, ob der Spieler tot ist
-                if {_nearest} is dead:
-                    kill {_golem}
-                    send "&eDer Eisen-Golem ist verschwunden, da das Ziel tot ist." to player
-                    stop
-                # Überprüfe, ob der Spieler zu weit entfernt ist
-                if distance between {_golem} and {_nearest} > 50:
-                    kill {_golem}
-                    send "&eDer Eisen-Golem ist verschwunden, da das Ziel zu weit weg ist." to player
-                    stop
-                wait 1 second
-            # Falls der Golem stirbt, Nachricht ausgeben
-            send "&eDein Eisen-Golem wurde besiegt!" to player
-        else:
-            send "&eKein Gegner in der Nähe! Der Eisen-Golem hat kein Ziel." to player
-            kill {_golem} # Kein Ziel -> Golem sofort entfernen
-        # Golem nach 20 Sekunden despawnen lassen
-        wait 20 seconds
-        if {_golem} is alive:
-            kill {_golem}
-            send "&eDein Eisen-Golem ist nach 60 Sekunden verschwunden." to player
+    if {phase.active} is 4:
+        if player's tool is honeycomb named "&6Golem Summoner":
+            send "&aEisen-Golem beschworen!" to player
+            # Beschwöre den Golem in der Nähe des Spielers
+            summon iron golem at location of player
+            set {_golem} to last spawned entity
+            wait 1 tick
+            # Finde den nächsten gegnerischen Spieler
+            set {_nearest} to ""
+            set {_nearest.distance} to 9999
+            loop all players:
+                if {enemy.team.%loop-player%} is not {enemy.team.%player%}: # Gegnerisches Team
+                    set {_distance} to distance between loop-player and {_golem}
+                    if {_distance} < {_nearest.distance}:
+                        set {_nearest} to loop-player
+                        set {_nearest.distance} to {_distance}
+            if {_nearest} is not "":
+                set target of {_golem} to {_nearest}
+                send "&cDer Eisen-Golem greift &e%{_nearest}%&c an!" to player
+                # Überwache Golem und Ziel
+                while {_golem} is alive:
+                    # Überprüfe, ob der Spieler tot ist
+                    if {_nearest} is dead:
+                        kill {_golem}
+                        send "&eDer Eisen-Golem ist verschwunden, da das Ziel tot ist." to player
+                        stop
+                    # Überprüfe, ob der Spieler zu weit entfernt ist
+                    if distance between {_golem} and {_nearest} > 50:
+                        kill {_golem}
+                        send "&eDer Eisen-Golem ist verschwunden, da das Ziel zu weit weg ist." to player
+                        stop
+                    wait 1 second
+                # Falls der Golem stirbt, Nachricht ausgeben
+                send "&eDein Eisen-Golem wurde besiegt!" to player
+            else:
+                send "&eKein Gegner in der Nähe! Der Eisen-Golem hat kein Ziel." to player
+                kill {_golem} # Kein Ziel -> Golem sofort entfernen
+            # Golem nach 20 Sekunden despawnen lassen
+            wait 20 seconds
+            if {_golem} is alive:
+                kill {_golem}
+                send "&eDein Eisen-Golem ist nach 60 Sekunden verschwunden." to player
+    else:
+        send "Use only in Battle Phase" to player            
