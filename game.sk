@@ -1,10 +1,10 @@
 # Definiere globale Variablen für den Phasenstatus und die Team-Spawns
 variables:
     {phase.active} = 1 # Möglichkeiten: none =1 phase 1 =2 phase 2 =3 phase 3 =4 
-    #{team.spawns.red} = location(-178.5, -40, -94.5, world "world") # Beispiel-Koordinaten für das rote Team
-    #{team.spawns.blue} = location(-178.5, -40, 37.5, world "world") # Beispiel-Koordinaten für das blaue Team
-    #{team.fight_spawns.red} = location(-178.5, -40, -70.5, world "world") # Beispiel-Koordinaten für das rote Team Bett
-    #{team.fight_spawns.blue} = location(-178.5, -40, 13.5, world "world") # Beispiel-Koordinaten für das blaue Team Bett
+    #{team.spawns.red} = location(-178.5, -40, -94.5, world "minigame-wars") # Beispiel-Koordinaten für das rote Team
+    #{team.spawns.blue} = location(-178.5, -40, 37.5, world "minigame-wars") # Beispiel-Koordinaten für das blaue Team
+    #{team.fight_spawns.red} = location(-178.5, -40, -70.5, world "minigame-wars") # Beispiel-Koordinaten für das rote Team Bett
+    #{team.fight_spawns.blue} = location(-178.5, -40, 13.5, world "minigame-wars") # Beispiel-Koordinaten für das blaue Team Bett
 
 command /setstartphase1:
     trigger:
@@ -40,10 +40,10 @@ command /startphase1:
                 # Spieler basierend auf ihrer Gruppe teleportieren
                 loop all players:
                     if loop-player has permission "group.team-rot":
-                        teleport loop-player to location(-178.5, -40, -97.5, world "world") # Beispiel-Koordinaten für das rote Team
+                        teleport loop-player to location(-178.5, -40, -97.5, world "minigame-wars") # Beispiel-Koordinaten für das rote Team
                         send "&cYou have been teleported to your team's spawn!" to loop-player
                     else if loop-player has permission "group.team-blau":
-                        teleport loop-player to location(-178.5, -40, 40.5, world "world") # Beispiel-Koordinaten für das blaue Team
+                        teleport loop-player to location(-178.5, -40, 40.5, world "minigame-wars") # Beispiel-Koordinaten für das blaue Team
                         send "&9You have been teleported to your team's spawn!" to loop-player
                     else:
                         send "&eYou are not in a team and have not been teleported." to loop-player
@@ -84,10 +84,10 @@ command /startphase3:
                 execute console command "say Phase 3 begins now! All players are teleported to the centre."
                 loop all players:
                     if loop-player has permission "group.team-rot":
-                        teleport loop-player to location(-178.5, -40, -73.5, world "world") # Beispiel-Koordinaten für das rote Team
+                        teleport loop-player to location(-178.5, -40, -73.5, world "minigame-wars") # Beispiel-Koordinaten für das rote Team
                         send "&cYou have been teleported to your team's spawn!" to loop-player
                     else if loop-player has permission "group.team-blau":
-                        teleport loop-player to location(-178.5, -40, 16.5, world "world") # Beispiel-Koordinaten für das blaue Team
+                        teleport loop-player to location(-178.5, -40, 16.5, world "minigame-wars") # Beispiel-Koordinaten für das blaue Team
                         send "&9You have been teleported to your team's spawn!" to loop-player
                     else:
                         send "&eYou are not in a team and have not been teleported." to loop-player
@@ -110,20 +110,20 @@ command /startphase3:
 on respawn: #legt den respawn während den restlichen phasen fest
     if {phase.active} is 2 or 3:
         if player has permission "group.team-rot":
-            set respawn location to location(-178.5, -40, -97.5, world "world")
+            set respawn location to location(-178.5, -40, -97.5, world "minigame-wars")
         else if player has permission "group.team-blau":
-            set respawn location to location(-178.5, -40, 40.5, world "world")
+            set respawn location to location(-178.5, -40, 40.5, world "minigame-wars")
 
 
 on respawn: # legt den respawn während der kampf phase fest
     if {phase.active} is 4:
         if {player.dead.%player%} is false:
             if player has permission "group.team-rot":
-                set respawn location to location(-178.5, -40, -73.5, world "world")
+                set respawn location to location(-178.5, -40, -73.5, world "minigame-wars")
             else if player has permission "group.team-blau":
-                set respawn location to location(-178.5, -40, 16.5, world "world")
+                set respawn location to location(-178.5, -40, 16.5, world "minigame-wars")
         else if {player.dead.%player%} is true:
-            set respawn location to location(-178.5, 27, -28.5, world "world")
+            set respawn location to location(-178.5, 27, -28.5, world "minigame-wars")
             
 command /bett-blau:
     trigger:
@@ -258,15 +258,10 @@ command /endgame:
             set {phase.active} to 5
             send "&cThe game is over!" to all players
             execute console command "say Game is over! Congratulations to the winners!"
- 
+            loop all players:
+                if loop-player has permission "group.team-rot" or "group.team-blau":
+                    teleport loop-player to location(-178.5, 27, -28.5, world "minigame-wars")
         else:
             send "&cDu hast KEINE Menschenrechte!" to player
 
 
-command /world-restore:
-    trigger:
-        if player has permission "group.game-admin":
-            execute console command "//pos1 -144,26,51"
-            execute console command "//pos2 -144,26,51"
-        else:
-            send "&cDu hast KEINE Menschenrechte!" to player
