@@ -16,16 +16,8 @@ on break:
         if event-block is not wool or obsidian or end stone or cobweb or stone:    
             if "%region at event-block%" contains "neutral_zone in world world" or "team_rot_main in world world" or "team_blau_main in world world":
                 send "&cYou can not brake &l%type of block% in this region" to player
-                
 
-
-                if {phase.active} is 1 or 2 or 3:
-                    if event-block is red bed or blue bed:
-
-                        send "&cYou cannot break a bed in this region!" to player
-                        cancel event
-                else: 
-                    cancel event
+                cancel event
 #on mine:
  #   if {phase.active} is not 4:
   #      if player is not op:
