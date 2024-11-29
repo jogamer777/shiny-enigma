@@ -23,6 +23,7 @@ command /setstartphase1:
                 set {respawns.%loop-player%} to 3
                 set loop-player's walk speed to 0.2
                 set loop-player's max health to 10
+                set {player.dead.%loop-player%} to false
 
         else:
             send "&cYou have no Human Rights!" to player
@@ -116,11 +117,14 @@ on respawn: #legt den respawn während den restlichen phasen fest
 
 on respawn: # legt den respawn während der kampf phase fest
     if {phase.active} is 4:
-        if player has permission "group.team-rot":
-            set respawn location to location(-178.5, -40, -70.5, world "world")
-        else if player has permission "group.team-blau":
-            set respawn location to location(-178.5, -40, 13.5, world "world")
-
+        if {player.dead.%player%} is false:
+            if player has permission "group.team-rot":
+                set respawn location to location(-178.5, -40, -70.5, world "world")
+            else if player has permission "group.team-blau":
+                set respawn location to location(-178.5, -40, 13.5, world "world")
+        else if {player.dead.%player%} is true:
+            set respawn location to location(-178.5, 27, -28.5, world "world")
+            
 command /bett-blau:
     trigger:
         send "%{team.bed_status.blue}%"
@@ -170,11 +174,13 @@ on death:
                     stop
                 else:
                     send "&cNo more respawns! You have been eliminated from the game." to victim
-                    execute console command "minecraft:kick %victim% You have been eliminated!"  # Spieler entfernen
+                    #execute console command "minecraft:kick %victim% You have been eliminated!"
+                    set {player.dead.%victim%} to true  # Spieler entfernen
                     stop
             else:
                 send "&cYour bed has been destroyed! You can no longer respawn." to victim
-                execute console command "minecraft:kick %victim% You have been eliminated!"  # Spieler entfernen
+                #execute console command "minecraft:kick %victim% You have been eliminated!"
+                set {player.dead.%victim%} to true  # Spieler entfernen
                 stop
         else if victim has permission "group.team-blau":  # Spieler gehört zum blauen Team
             if {team.bed_status.blue} is true:  # Blaues Bett steht noch
@@ -185,11 +191,13 @@ on death:
                     stop
                 else:
                     send "&9No more respawns! You have been eliminated from the game." to victim
-                    execute console command "minecraft:kick %victim% You have been eliminated!"  # Spieler entfernen
+                    #execute console command "minecraft:kick %victim% You have been eliminated!"
+                    set {player.dead.%victim%} to true  # Spieler entfernen
                     stop
             else:
                 send "&9Your bed has been destroyed! You can no longer respawn." to victim
-                execute console command "minecraft:kick %victim% You have been eliminated!"  # Spieler entfernen
+                #execute console command "minecraft:kick %victim% You have been eliminated!"
+                set {player.dead.%victim%} to true  # Spieler entfernen
                 stop
 
 

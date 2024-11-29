@@ -16,12 +16,21 @@ command /team <text>:
             execute console command "lp user %player% parent remove team-blau"
             send "&cYou are now on Team Red!" to player
             set {enemy.team.%player%} to true
+            set {spectator.%player%} to false
         else if arg-1 is "blue":
             set {team.%player%} to "blue"
             execute console command "lp user %player% parent add team-blau"
             execute console command "lp user %player% parent remove team-rot" 
             send "&9You are now on Team Blue" to player
             set {enemy.team.%player%} to false
+            set {spectator.%player%} to false
+        else if arg-1 is "none":
+            set {team.%player%} to ""
+            execute console command "lp user %player% parent remove team-rot"
+            execute console command "lp user %player% parent remove team-blau"
+            send "&6You are now on no Team" to player
+            set {enemy.team.%player%} to false
+            set {spectator.%player%} to true
         else:
             send "&7Use: /team <red/blue>" to player
      
