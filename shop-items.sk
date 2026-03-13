@@ -43,7 +43,7 @@ command /givegoldencarrot-reset:
 
 command /giverabitsfoot:
     trigger:
-        give player 1 rabbit's foot named "&6Rabbit's Foot" with lore "&eIncreases your speed permanently!"
+        give player 1 rabbit foot named "&6Rabbit's Foot" with lore "&eIncreases your speed permanently!"
         send "&aYou received a &6Rabbit's Foot&7!" to player
 
 
@@ -88,12 +88,12 @@ on right click:
         stop
 
     # --- Rabbit's Foot: +0.1 walk speed ---
-    if player's tool is rabbit's foot named "&6Rabbit's Foot" with lore "&eIncreases your speed permanently!":
+    if player's tool is rabbit foot named "&6Rabbit's Foot" with lore "&eIncreases your speed permanently!":
         add 0.1 to player's walk speed
         send "&a+0.1 Speed! Your current speed is now %player's walk speed%." to player
-        remove 1 of rabbit's foot named "&6Rabbit's Foot" with lore "&eIncreases your speed permanently!" from player's inventory
+        remove 1 of rabbit foot named "&6Rabbit's Foot" with lore "&eIncreases your speed permanently!" from player's inventory
         stop
-    else if player's tool is rabbit's foot:
+    else if player's tool is rabbit foot:
         send "&cThis is just a regular Rabbit's Foot — no special effect." to player
         stop
 
@@ -148,7 +148,7 @@ on right click with honeycomb:
 
     if {_nearest} is not "":
         set target of {_golem} to {_nearest}
-        send "&cThe Iron Golem is targeting &e%{_nearest%}&c!" to player
+        send "&cThe Iron Golem is targeting &e%{_nearest}%&c!" to player
 
         # Monitor golem until it dies, target dies, or target runs too far
         while {_golem} is alive:
@@ -168,7 +168,7 @@ on right click with honeycomb:
         kill {_golem}
 
     # Auto-despawn after {golem.lifetime} seconds (20s by default)
-    wait {golem.lifetime} seconds
+    wait {game.wait.golem}
     if {_golem} is alive:
         kill {_golem}
         send "&eYour Iron Golem disappeared after %{golem.lifetime}% seconds." to player

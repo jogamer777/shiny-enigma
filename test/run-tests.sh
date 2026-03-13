@@ -35,10 +35,14 @@ assert_log() {
     local expected_pattern="$3"
     local timeout="${4:-5}"
 
+    # Record log position BEFORE sending the command so we only match NEW entries
+    local start_line
+    start_line=$(wc -l < "$LOG_FILE")
+
     rcon "$command" > /dev/null 2>&1
     local deadline=$((SECONDS + timeout))
     while [[ $SECONDS -lt $deadline ]]; do
-        if tail -n 50 "$LOG_FILE" | grep -q "$expected_pattern"; then
+        if tail -n +"$((start_line + 1))" "$LOG_FILE" | grep -q "$expected_pattern"; then
             echo -e "  ${GREEN}PASS${NC}  $description"
             ((PASS++))
             return 0

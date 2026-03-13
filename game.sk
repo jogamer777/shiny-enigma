@@ -8,11 +8,6 @@
 variables:
     {phase.active} = 1   # 1=setup, 2=phase1, 3=phase2, 4=combat, 5=ended
 
-    {spawn.red}         = location(-178.5, -40, -94.5, world "world")
-    {spawn.blue}        = location(-178.5, -40, 37.5, world "world")
-    {fight.spawn.red}   = location(-178.5, -40, -70.5, world "world")
-    {fight.spawn.blue}  = location(-178.5, -40, 13.5, world "world")
-
     # Timers (in seconds)
     {timer.phase1} = 300   # 5 minutes
     {timer.phase2} = 300   # 5 minutes
@@ -24,8 +19,18 @@ variables:
     {game.walk.speed} = 0.2
 
 
-# --- Helper: send permission error ---
-# (used inline below to keep things DRY)
+# --- Set location and timespan variables on load ---
+# (function calls and timespans can't be used in the variables block)
+on load:
+    set {spawn.red}        to location(-178.5, -40, -94.5, world "world")
+    set {spawn.blue}       to location(-178.5, -40, 37.5, world "world")
+    set {fight.spawn.red}  to location(-178.5, -40, -70.5, world "world")
+    set {fight.spawn.blue} to location(-178.5, -40, 13.5, world "world")
+    # Pre-computed timespans (must match the timer.* number variables above)
+    set {game.wait.phase1} to 300 seconds
+    set {game.wait.phase2} to 300 seconds
+    set {game.wait.golem}  to 20 seconds
+    log "[Skript] shiny-enigma loaded — 0 errors"
 
 
 # ============================================================
@@ -33,9 +38,10 @@ variables:
 # ============================================================
 command /setstartphase1:
     trigger:
-        if player does not have permission "group.game-admin":
-            send "&cYou don't have permission to do this!" to player
-            stop
+        if player is a player:
+            if player does not have permission "group.game-admin":
+                send "&cYou don't have permission to do this!" to player
+                stop
 
         set {phase.active} to 1
         execute console command "/rg flag neutral_zone -w world entry deny"
@@ -62,9 +68,10 @@ command /setstartphase1:
 # ============================================================
 command /startphase1:
     trigger:
-        if player does not have permission "group.game-admin":
-            send "&cYou don't have permission to do this!" to player
-            stop
+        if player is a player:
+            if player does not have permission "group.game-admin":
+                send "&cYou don't have permission to do this!" to player
+                stop
 
         if {phase.active} is not 1:
             send "&cCannot start phase 1 — current phase: %{phase.active}%!" to player
@@ -84,7 +91,7 @@ command /startphase1:
             else:
                 send "&eYou are not in a team and were not teleported." to loop-player
 
-        wait {timer.phase1} seconds
+        wait {game.wait.phase1}
         if {phase.active} is 2:
             execute console command "/startphase2"
 
@@ -94,9 +101,10 @@ command /startphase1:
 # ============================================================
 command /startgame:
     trigger:
-        if player does not have permission "group.game-admin":
-            send "&cYou don't have permission to do this!" to player
-            stop
+        if player is a player:
+            if player does not have permission "group.game-admin":
+                send "&cYou don't have permission to do this!" to player
+                stop
 
         execute console command "/setstartphase1"
         wait 1 tick
@@ -118,7 +126,7 @@ command /startphase2:
         execute console command "say Phase 2 is active! The neutral zone is now open."
         execute console command "/rg flag neutral_zone -w world entry allow"
 
-        wait {timer.phase2} seconds
+        wait {game.wait.phase2}
         if {phase.active} is 3:
             execute console command "/startphase3"
 
@@ -159,25 +167,29 @@ command /startphase3:
 # ============================================================
 command /endgame:
     trigger:
-        if player does not have permission "group.game-admin":
-            send "&cYou don't have permission to do this!" to player
-            stop
+        if player is a player:
+            if player does not have permission "group.game-admin":
+                send "&cYou don't have permission to do this!" to player
+                stop
 
         set {phase.active} to 5
 
         # Determine winner by bed status
-        if {team.bed_status.red} is true and {team.bed_status.blue} is false:
-            send "&c&lTeam Red wins the game! Congratulations!" to all players
-            execute console command "say Team Red is victorious!"
-            log "[game] Team Red wins"
-        else if {team.bed_status.blue} is true and {team.bed_status.red} is false:
-            send "&9&lTeam Blue wins the game! Congratulations!" to all players
-            execute console command "say Team Blue is victorious!"
-            log "[game] Team Blue wins"
-        else:
-            send "&eThe game has ended! No clear winner." to all players
-            execute console command "say The game is over!"
-            log "[game] No clear winner"
+        if {team.bed_status.red} is true:
+            if {team.bed_status.blue} is false:
+                send "&c&lTeam Red wins the game! Congratulations!" to all players
+                execute console command "say Team Red is victorious!"
+                log "[game] Team Red wins"
+                stop
+        if {team.bed_status.blue} is true:
+            if {team.bed_status.red} is false:
+                send "&9&lTeam Blue wins the game! Congratulations!" to all players
+                execute console command "say Team Blue is victorious!"
+                log "[game] Team Blue wins"
+                stop
+        send "&eThe game has ended! No clear winner." to all players
+        execute console command "say The game is over!"
+        log "[game] No clear winner"
 
 
 # ============================================================
@@ -185,9 +197,10 @@ command /endgame:
 # ============================================================
 command /resetgame:
     trigger:
-        if player does not have permission "group.game-admin":
-            send "&cYou don't have permission to do this!" to player
-            stop
+        if player is a player:
+            if player does not have permission "group.game-admin":
+                send "&cYou don't have permission to do this!" to player
+                stop
 
         set {phase.active} to 1
         set {team.bed_status.red}  to true
@@ -207,37 +220,47 @@ command /resetgame:
 
 
 # ============================================================
-# on death — Respawn logic
+# on death — Respawn logic (counting only)
 # ============================================================
 on death of player:
     set {_p} to victim
 
     # Only active during phases 2, 3, 4
-    if {phase.active} is 1 or {phase.active} is 5:
+    if {phase.active} is 1:
+        stop
+    if {phase.active} is 5:
         stop
 
     if {respawns.%{_p}%} > 0:
         subtract 1 from {respawns.%{_p}%}
         send "&eYou died! Respawns remaining: &c%{respawns.%{_p}%}%" to {_p}
-        wait 3 seconds
-        if {_p} is online:
-            if {_p} has permission "group.team-rot":
-                if {phase.active} is 4:
-                    respawn {_p}
-                    teleport {_p} to {fight.spawn.red}
-                else:
-                    respawn {_p}
-                    teleport {_p} to {spawn.red}
-            else if {_p} has permission "group.team-blau":
-                if {phase.active} is 4:
-                    respawn {_p}
-                    teleport {_p} to {fight.spawn.blue}
-                else:
-                    respawn {_p}
-                    teleport {_p} to {spawn.blue}
     else:
         send "&cYou have no respawns left! You are now a spectator." to {_p}
-        # Set spectator mode — admin must manually re-add if needed
-        wait 3 seconds
-        if {_p} is online:
-            set game mode of {_p} to spectator
+        set {pending.spectator.%{_p}%} to true
+
+
+# ============================================================
+# on respawn — Teleport players to correct spawn
+# ============================================================
+on respawn of player:
+    if {pending.spectator.%player%} is true:
+        delete {pending.spectator.%player%}
+        wait 1 tick
+        set game mode of player to spectator
+        stop
+
+    if {phase.active} is 1:
+        stop
+    if {phase.active} is 5:
+        stop
+
+    if player has permission "group.team-rot":
+        if {phase.active} is 4:
+            teleport player to {fight.spawn.red}
+        else:
+            teleport player to {spawn.red}
+    else if player has permission "group.team-blau":
+        if {phase.active} is 4:
+            teleport player to {fight.spawn.blue}
+        else:
+            teleport player to {spawn.blue}

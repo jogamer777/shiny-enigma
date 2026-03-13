@@ -11,104 +11,84 @@
 # ============================================================
 
 # ============================================================
-# /sktest phases — Print current phase value
-# Output: [SKTEST] PHASE_TEST phase=<n>
+# /sktest <subcommand> [arg] — Unified test command
+#
+# Subcommands:
+#   phases                — Print current phase value
+#   setphase <n>          — Directly set phase (bypass timers)
+#   bedstatus             — Print both bed status flags
+#   killbed <red|blue>    — Simulate a bed being destroyed
+#   respawns <name>       — Print respawn count
+#   addrespawn <name>     — Add 1 respawn
+#   subrespawn <name>     — Remove 1 respawn
+#   vars                  — Dump all key config variables
 # ============================================================
-command /sktest phases:
+command /sktest <text> [<text>]:
     trigger:
-        log "[SKTEST] PHASE_TEST phase=%{phase.active}%"
-        send "[SKTEST] PHASE_TEST phase=%{phase.active}%" to console
+        if arg-1 is "phases":
+            log "[SKTEST] PHASE_TEST phase=%{phase.active}%"
+            send "[SKTEST] PHASE_TEST phase=%{phase.active}%" to console
 
-# ============================================================
-# /sktest setphase <n> — Directly set phase (bypass timers)
-# Output: [SKTEST] PHASE_TEST phase=<n>
-# ============================================================
-command /sktest setphase <integer>:
-    trigger:
-        set {phase.active} to arg-1
-        log "[SKTEST] PHASE_TEST phase=%{phase.active}%"
-        send "[SKTEST] PHASE_TEST phase=%{phase.active}%" to console
+        else if arg-1 is "setphase":
+            if arg-2 is not set:
+                send "[SKTEST] ERROR: usage: /sktest setphase <n>" to console
+                stop
+            set {phase.active} to arg-2 parsed as integer
+            log "[SKTEST] PHASE_TEST phase=%{phase.active}%"
+            send "[SKTEST] PHASE_TEST phase=%{phase.active}%" to console
 
-# ============================================================
-# /sktest bedstatus — Print both bed status flags
-# Output: [SKTEST] BED_TEST red=<true/false> blue=<true/false>
-# ============================================================
-command /sktest bedstatus:
-    trigger:
-        log "[SKTEST] BED_TEST red=%{team.bed_status.red}% blue=%{team.bed_status.blue}%"
-        send "[SKTEST] BED_TEST red=%{team.bed_status.red}% blue=%{team.bed_status.blue}%" to console
+        else if arg-1 is "bedstatus":
+            log "[SKTEST] BED_TEST red=%{team.bed_status.red}% blue=%{team.bed_status.blue}%"
+            send "[SKTEST] BED_TEST red=%{team.bed_status.red}% blue=%{team.bed_status.blue}%" to console
 
-# ============================================================
-# /sktest killbed <red|blue> — Simulate a bed being destroyed
-# Output: [SKTEST] BED_TEST red=<v> blue=<v>
-# ============================================================
-command /sktest killbed <text>:
-    trigger:
-        if arg-1 is "red":
-            set {team.bed_status.red} to false
-        else if arg-1 is "blue":
-            set {team.bed_status.blue} to false
+        else if arg-1 is "killbed":
+            if arg-2 is "red":
+                set {team.bed_status.red} to false
+            else if arg-2 is "blue":
+                set {team.bed_status.blue} to false
+            else:
+                send "[SKTEST] ERROR: unknown team '%arg-2%' — use red or blue" to console
+                stop
+            log "[SKTEST] BED_TEST red=%{team.bed_status.red}% blue=%{team.bed_status.blue}%"
+            send "[SKTEST] BED_TEST red=%{team.bed_status.red}% blue=%{team.bed_status.blue}%" to console
+
+        else if arg-1 is "respawns":
+            set {_name} to arg-2
+            if {respawns.%{_name}%} is not set:
+                set {respawns.%{_name}%} to {game.respawns.default}
+            log "[SKTEST] RESPAWN_TEST %{_name}% %{respawns.%{_name}%}%"
+            send "[SKTEST] RESPAWN_TEST %{_name}% %{respawns.%{_name}%}%" to console
+
+        else if arg-1 is "addrespawn":
+            set {_name} to arg-2
+            if {respawns.%{_name}%} is not set:
+                set {respawns.%{_name}%} to {game.respawns.default}
+            add 1 to {respawns.%{_name}%}
+            log "[SKTEST] RESPAWN_TEST %{_name}% %{respawns.%{_name}%}%"
+            send "[SKTEST] RESPAWN_TEST %{_name}% %{respawns.%{_name}%}%" to console
+
+        else if arg-1 is "subrespawn":
+            set {_name} to arg-2
+            if {respawns.%{_name}%} is not set:
+                set {respawns.%{_name}%} to {game.respawns.default}
+            if {respawns.%{_name}%} > 0:
+                subtract 1 from {respawns.%{_name}%}
+            log "[SKTEST] RESPAWN_TEST %{_name}% %{respawns.%{_name}%}%"
+            send "[SKTEST] RESPAWN_TEST %{_name}% %{respawns.%{_name}%}%" to console
+
+        else if arg-1 is "vars":
+            send "[SKTEST] --- Variable Dump ---" to console
+            send "[SKTEST] phase.active     = %{phase.active}%" to console
+            send "[SKTEST] bed.red          = %{team.bed_status.red}%" to console
+            send "[SKTEST] bed.blue         = %{team.bed_status.blue}%" to console
+            send "[SKTEST] timer.phase1     = %{timer.phase1}%" to console
+            send "[SKTEST] timer.phase2     = %{timer.phase2}%" to console
+            send "[SKTEST] golem.lifetime   = %{golem.lifetime}%" to console
+            send "[SKTEST] default.respawns = %{game.respawns.default}%" to console
+            send "[SKTEST] max.health       = %{game.max.health}%" to console
+            send "[SKTEST] walk.speed       = %{game.walk.speed}%" to console
+            send "[SKTEST] --- End Dump ---" to console
+            log "[SKTEST] VARS_DUMP phase=%{phase.active}% bed_red=%{team.bed_status.red}% bed_blue=%{team.bed_status.blue}%"
+
         else:
-            send "[SKTEST] ERROR: unknown team '%arg-1%' — use red or blue" to console
-            stop
-        log "[SKTEST] BED_TEST red=%{team.bed_status.red}% blue=%{team.bed_status.blue}%"
-        send "[SKTEST] BED_TEST red=%{team.bed_status.red}% blue=%{team.bed_status.blue}%" to console
-
-# ============================================================
-# /sktest respawns <playerName> — Print respawn count for a fake player name
-# (uses the variable directly; player does not need to be online)
-# Output: [SKTEST] RESPAWN_TEST <name> <count>
-# ============================================================
-command /sktest respawns <text>:
-    trigger:
-        set {_name} to arg-1
-        # Initialise if not set
-        if {respawns.%{_name}%} is not set:
-            set {respawns.%{_name}%} to {game.respawns.default}
-        log "[SKTEST] RESPAWN_TEST %{_name}% %{respawns.%{_name}%}%"
-        send "[SKTEST] RESPAWN_TEST %{_name}% %{respawns.%{_name}%}%" to console
-
-# ============================================================
-# /sktest addrespawn <playerName> — Add 1 respawn
-# Output: [SKTEST] RESPAWN_TEST <name> <newCount>
-# ============================================================
-command /sktest addrespawn <text>:
-    trigger:
-        set {_name} to arg-1
-        if {respawns.%{_name}%} is not set:
-            set {respawns.%{_name}%} to {game.respawns.default}
-        add 1 to {respawns.%{_name}%}
-        log "[SKTEST] RESPAWN_TEST %{_name}% %{respawns.%{_name}%}%"
-        send "[SKTEST] RESPAWN_TEST %{_name}% %{respawns.%{_name}%}%" to console
-
-# ============================================================
-# /sktest subrespawn <playerName> — Remove 1 respawn
-# Output: [SKTEST] RESPAWN_TEST <name> <newCount>
-# ============================================================
-command /sktest subrespawn <text>:
-    trigger:
-        set {_name} to arg-1
-        if {respawns.%{_name}%} is not set:
-            set {respawns.%{_name}%} to {game.respawns.default}
-        if {respawns.%{_name}%} > 0:
-            subtract 1 from {respawns.%{_name}%}
-        log "[SKTEST] RESPAWN_TEST %{_name}% %{respawns.%{_name}%}%"
-        send "[SKTEST] RESPAWN_TEST %{_name}% %{respawns.%{_name}%}%" to console
-
-# ============================================================
-# /sktest vars — Dump all key config variables for inspection
-# ============================================================
-command /sktest vars:
-    trigger:
-        send "[SKTEST] --- Variable Dump ---" to console
-        send "[SKTEST] phase.active     = %{phase.active}%" to console
-        send "[SKTEST] bed.red          = %{team.bed_status.red}%" to console
-        send "[SKTEST] bed.blue         = %{team.bed_status.blue}%" to console
-        send "[SKTEST] timer.phase1     = %{timer.phase1}%" to console
-        send "[SKTEST] timer.phase2     = %{timer.phase2}%" to console
-        send "[SKTEST] golem.lifetime   = %{golem.lifetime}%" to console
-        send "[SKTEST] default.respawns = %{game.respawns.default}%" to console
-        send "[SKTEST] max.health       = %{game.max.health}%" to console
-        send "[SKTEST] walk.speed       = %{game.walk.speed}%" to console
-        send "[SKTEST] --- End Dump ---" to console
-        log "[SKTEST] VARS_DUMP phase=%{phase.active}% bed_red=%{team.bed_status.red}% bed_blue=%{team.bed_status.blue}%"
+            send "[SKTEST] ERROR: unknown subcommand '%arg-1%'" to console
