@@ -1,0 +1,46 @@
+# ============================================================
+# shiny-enigma - WorldGuard Region Setup
+#
+# Run these commands ONCE on your server to set up all regions.
+# Replace the coordinates with your actual map coordinates first!
+#
+# Required plugin: WorldGuard
+# ============================================================
+
+# --- Team Red main area ---
+# (team members can break blocks; PvP allowed inside)
+/rg define team_rot_main
+/rg flag team_rot_main block-break -g member allow
+/rg flag team_rot_main pvp allow
+/rg flag team_rot_main vine-growth deny
+/rg addmember team_rot_main g:team-rot
+
+# --- Team Blue main area ---
+/rg define team_blau_main
+/rg flag team_blau_main block-break -g member allow
+/rg flag team_blau_main pvp allow
+/rg flag team_blau_main vine-growth deny
+/rg addmember team_blau_main g:team-blau
+
+# --- Neutral zone (build phase resource area) ---
+# Priority -2 so team regions override it at the edges
+/rg define neutral_zone
+/rg flag neutral_zone block-break allow
+/rg flag neutral_zone block-place allow
+/rg flag neutral_zone interact allow
+/rg flag neutral_zone entry allow
+/rg flag neutral_zone pvp deny
+/rg setpriority neutral_zone -2
+
+# --- Team Red bed protection ---
+# Only non-members are blocked from breaking/placing
+/rg define team_rot_bett
+/rg flag team_rot_bett block-break -g nonmember deny
+/rg flag team_rot_bett block-place -g nonmember deny
+/rg addmember team_rot_bett g:team-rot
+
+# --- Team Blue bed protection ---
+/rg define team_blau_bett
+/rg flag team_blau_bett block-break -g nonmember deny
+/rg flag team_blau_bett block-place -g nonmember deny
+/rg addmember team_blau_bett g:team-blau
