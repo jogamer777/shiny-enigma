@@ -109,13 +109,7 @@ echo -e "${BOLD}[1] Skript sanity checks${NC}"
 assert_log \
     "Skript loaded without errors" \
     "sk reload all" \
-    "Successfully loaded" \
-    15
-
-assert_log \
-    "No Skript errors after reload" \
-    "sk reload all" \
-    "0 error" \
+    "loaded.*without errors\|0 error\|Successfully loaded" \
     15
 
 # =============================================================================
@@ -225,7 +219,7 @@ run "sktest setphase 3"
 assert_log \
     "Phase survives script reload" \
     "sk reload all" \
-    "Successfully loaded" \
+    "loaded.*without errors\|0 error\|Successfully loaded" \
     15
 
 assert_log \

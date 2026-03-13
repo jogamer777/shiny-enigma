@@ -54,6 +54,7 @@ command /setstartphase1:
             heal loop-player
 
         send "&aSetup phase started! Players have been reset." to all players
+        log "[game] Setup phase started"
 
 
 # ============================================================
@@ -168,12 +169,15 @@ command /endgame:
         if {team.bed_status.red} is true and {team.bed_status.blue} is false:
             send "&c&lTeam Red wins the game! Congratulations!" to all players
             execute console command "say Team Red is victorious!"
+            log "[game] Team Red wins"
         else if {team.bed_status.blue} is true and {team.bed_status.red} is false:
             send "&9&lTeam Blue wins the game! Congratulations!" to all players
             execute console command "say Team Blue is victorious!"
+            log "[game] Team Blue wins"
         else:
             send "&eThe game has ended! No clear winner." to all players
             execute console command "say The game is over!"
+            log "[game] No clear winner"
 
 
 # ============================================================
@@ -199,6 +203,7 @@ command /resetgame:
             clear loop-player's inventory
 
         send "&aGame has been fully reset. All player stats cleared." to all players
+        log "[game] Game has been fully reset"
 
 
 # ============================================================
